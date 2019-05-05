@@ -369,6 +369,173 @@ class Trainer(object):
 
         return losses.avg, accs.avg
 
+    # def train_one_epoch_classification(self, epoch):
+    #
+    #     batch_time = AverageMeter()
+    #     losses = AverageMeter()
+    #     accs = AverageMeter()
+    #
+    #     tic = time.time()
+    #     # with tqdm(total=self.num_train) as pbar:
+    #     for i, (x, y) in enumerate(self.train_loader):
+    #         if self.use_gpu:
+    #             x, y = x.cuda(), y.cuda()
+    #         x, y = Variable(x), Variable(y)
+    #         # pdb.set_trace()
+    #
+    #         print(i)
+    #
+    #         plot = False
+    #         if (epoch % self.plot_freq == 0) and (i == 0):
+    #             plot = True
+    #
+    #         # initialize location vector and hidden state
+    #         self.batch_size = x.shape[0]
+    #         # here check the size of image
+    #         h_t, l_t, prev_l_t, final_image = self.reset()
+    #
+    #         # save images
+    #         imgs = []
+    #         imgs.append(x[0:9])
+    #
+    #         # extract the glimpses
+    #         locs = []
+    #         img_patch = []
+    #
+    #         for t in range(self.num_glimpses - 1):
+    #             # h_t, l_t, b_t, p = self.model(x, l_t, h_t)
+    #             h_t, l_t = self.model(x, l_t, h_t)
+    #             prev_l_t = l_t
+    #             # store
+    #             locs.append(l_t[0:9])
+    #
+    #         # last iteration
+    #         h_t, l_t, log_probas = self.model(
+    #             x, l_t, h_t, last=True
+    #         )
+    #         locs.append(l_t[0:9])
+    #
+    #         # calculate loss
+    #         predicted = torch.max(log_probas, 1)[1]
+    #         loss = F.nll_loss(log_probas, y)
+    #
+    #         # compute accuracy
+    #         correct = (predicted == y).float()
+    #         acc = 100 * (correct.sum() / len(y))
+    #
+    #         # store
+    #         losses.update(loss.data[0], x.size()[0])
+    #         accs.update(acc.data[0], x.size()[0])
+    #
+    #         # compute gradients and update SGD
+    #         self.optimizer.zero_grad()
+    #         loss.backward()
+    #         self.optimizer.step()
+    #
+    #         # measure elapsed time
+    #         toc = time.time()
+    #         batch_time.update(toc-tic)
+    #
+    #         # pbar.set_description(
+    #         #     ("{:.1f}s - loss: {:.3f} - accuracy: {:.3f}".format((toc-tic), loss.data[0], acc.data[0]))
+    #         # )
+    #         # pbar.update(self.batch_size)
+    #
+    #         # dump the glimpses and locs
+    #         if plot:
+    #             if self.use_gpu:
+    #                 imgs = [g.cpu().data.numpy().squeeze() for g in imgs]
+    #                 locs = [l.cpu().data.numpy() for l in locs]
+    #             else:
+    #                 imgs = [g.data.numpy().squeeze() for g in imgs]
+    #                 locs = [l.data.numpy() for l in locs]
+    #             pickle.dump(
+    #                 imgs, open(
+    #                     self.plot_dir + "g_{}.p".format(epoch+1),
+    #                     "wb"
+    #                 )
+    #             )
+    #             pickle.dump(
+    #                 locs, open(
+    #                     self.plot_dir + "l_{}.p".format(epoch+1),
+    #                     "wb"
+    #                 )
+    #             )
+    #
+    #         # log to tensorboard
+    #         print('kya')
+    #         if self.use_tensorboard:
+    #             iteration = epoch*len(self.train_loader) + i
+    #             log_value('train_loss', losses.avg, iteration)
+    #             log_value('train_acc', accs.avg, iteration)
+    #
+    #         print('mamamamamama')
+    #
+    #     return losses.avg, accs.avg
+    #
+    # def validate_classication(self, epoch):
+    #     """
+    #     Evaluate the model on the validation set.
+    #     """
+    #     losses = AverageMeter()
+    #     accs = AverageMeter()
+    #
+    #     for i, (x, y) in enumerate(self.valid_loader):
+    #         if self.use_gpu:
+    #             x, y = x.cuda(), y.cuda()
+    #         x, y = Variable(x), Variable(y)
+    #
+    #         # duplicate 10 times
+    #         x = x.repeat(self.M, 1, 1, 1)
+    #
+    #         # initialize location vector and hidden state
+    #         self.batch_size = x.shape[0]
+    #         # h_t, l_t = self.reset()
+    #         h_t, l_t, prev_l_t, final_image = self.reset()
+    #
+    #         # extract the glimpses
+    #         for t in range(self.num_glimpses - 1):
+    #             # h_t, l_t, b_t, p = self.model(x, l_t, h_t)
+    #             h_t, l_t = self.model(x, l_t, h_t)
+    #             prev_l_t = l_t
+    #
+    #         # last iteration
+    #         h_t, l_t, log_probas = self.model(
+    #             x, l_t, h_t, last=True
+    #         )
+    #
+    #         # average
+    #         log_probas = log_probas.view(
+    #             self.M, -1, log_probas.shape[-1]
+    #         )
+    #         log_probas = torch.mean(log_probas, dim=0)
+    #
+    #
+    #         # calculate reward
+    #         predicted = torch.max(log_probas, 1)[1]
+    #
+    #         # compute losses for differentiable modules
+    #         loss_action = F.nll_loss(log_probas, y)
+    #
+    #
+    #         # sum up into a hybrid loss
+    #         loss = loss_action
+    #
+    #         # compute accuracy
+    #         correct = (predicted == y).float()
+    #         acc = 100 * (correct.sum() / len(y))
+    #
+    #         # store
+    #         losses.update(loss.data[0], x.size()[0])
+    #         accs.update(acc.data[0], x.size()[0])
+    #
+    #         # log to tensorboard
+    #         if self.use_tensorboard:
+    #             iteration = epoch*len(self.valid_loader) + i
+    #             log_value('valid_loss', losses.avg, iteration)
+    #             log_value('valid_acc', accs.avg, iteration)
+    #
+    #     return losses.avg, accs.avg
 
     def validate(self, epoch):
         """
@@ -464,7 +631,7 @@ class Trainer(object):
 
         return losses.avg, accs.avg
 
-    def test(self, model_epoch):
+    def test(self):
         """
         Test the model on the held-out test data.
         This function should only be called at the very
@@ -473,7 +640,7 @@ class Trainer(object):
         correct = 0
 
         # load the best checkpoint
-        self.load_checkpoint(best=False, epoch=model_epoch)
+        self.load_checkpoint(best=self.best)
 
         for i, (x, y) in enumerate(self.test_loader):
             if self.use_gpu:
@@ -485,37 +652,32 @@ class Trainer(object):
 
             # initialize location vector and hidden state
             self.batch_size = x.shape[0]
-            # h_t, l_t = self.reset()
-            h_t, l_t, prev_l_t, final_image = self.reset()
+            h_t, l_t = self.reset()
 
             # extract the glimpses
-            # for t in range(self.num_glimpses - 1):
-            for t in range(self.num_glimpses):
+            for t in range(self.num_glimpses - 1):
                 # forward pass through model
-                # h_t, l_t, b_t, p = self.model(x, l_t, h_t)
-                h_t, l_t, b_t, new_img_patch, p = self.model(x, l_t, h_t)
-                new_img_patch = new_img_patch.view(new_img_patch.shape[0], 1, self.original_img_size, self.original_img_size)
-                final_image += new_img_patch
+                h_t, l_t, b_t, p = self.model(x, l_t, h_t)
 
             # last iteration
-            # h_t, l_t, b_t, log_probas, p = self.model(
-            #     x, l_t, h_t, last=True
-            # )
+            h_t, l_t, b_t, log_probas, p = self.model(
+                x, l_t, h_t, last=True
+            )
 
-            # log_probas = log_probas.view(
-            #     self.M, -1, log_probas.shape[-1]
-            # )
-            # log_probas = torch.mean(log_probas, dim=0)
+            log_probas = log_probas.view(
+                self.M, -1, log_probas.shape[-1]
+            )
+            log_probas = torch.mean(log_probas, dim=0)
 
-        #     pred = log_probas.data.max(1, keepdim=True)[1]
-        #     correct += pred.eq(y.data.view_as(pred)).cpu().sum()
-        #
-        # perc = (100. * correct) / (self.num_test)
-        # error = 100 - perc
-        # print(
-        #     '[*] Test Acc: {}/{} ({:.2f}% - {:.2f}%)'.format(
-        #         correct, self.num_test, perc, error)
-        # )
+            pred = log_probas.data.max(1, keepdim=True)[1]
+            correct += pred.eq(y.data.view_as(pred)).cpu().sum()
+
+        perc = (100. * correct) / (self.num_test)
+        error = 100 - perc
+        print(
+            '[*] Test Acc: {}/{} ({:.2f}% - {:.2f}%)'.format(
+                correct, self.num_test, perc, error)
+        )
 
     def save_checkpoint(self, state, is_best, epoch):
         """

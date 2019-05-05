@@ -40,7 +40,7 @@ def main(config):
 
     # or load a pretrained model and test
     else:
-        trainer.test(config.model_epoch)
+        trainer.test()
 
 
 if __name__ == '__main__':

@@ -35,8 +35,6 @@ def main(plot_dir, epoch):
         open(plot_dir + "pg_{}.p".format(epoch), "rb"))
     img_patch = pickle.load(
         open(plot_dir + "ip_{}.p".format(epoch), "rb"))
-    glimpses_patch = pickle.load(
-        open(plot_dir + "gp_{}.p".format(epoch), "rb"))
     # pdb.set_trace()
 
     glimpses = np.concatenate(glimpses)
@@ -52,32 +50,31 @@ def main(plot_dir, epoch):
     # # grab useful params
     size = int(plot_dir.split('_')[2][0])
     num_anims = len(locations)
-    num_cols = imageWise.shape[1]-1
+    num_cols = imageWise.shape[1]
     img_shape = imageWise.shape[-1]
-    channels = 3
-    num_patches = int(glimpses_patch[0].shape[-1]/(size*size*channels))
-    batch_size = glimpses_patch[0].shape[0]
-    # for gp in glimpses_patch:
-    #     print("hi")
-    glimpsesWise = np.zeros((len(glimpses_patch), batch_size, num_patches, channels, size, size))
-    for i in range(len(glimpses_patch)):
-        glimpsesWise[i] = np.reshape(glimpses_patch[i], (batch_size, num_patches, channels, size, size))
-    # pdb.set_trace()
+
     # denormalize coordinates
     coords = [denormalize(img_shape, l) for l in locations]
 
     # # fig, axs = plt.subplots(nrows=2, ncols=num_anims)
     def showAll(i) :
 
-        fig, axs = plt.subplots(nrows=2+num_patches, ncols=num_cols)
+        fig, axs = plt.subplots(nrows=2, ncols=num_cols)
         # # fig.set_dpi(100)
         # pdb.set_trace()
         # # plot base image
         im1 = np.transpose(glimpses[i], (1,2,0))
         color = 'r'
         for j, ax in enumerate(axs.flat):
-
-            if j < num_cols:
+            if j >= num_cols:
+                # ax.imshow(imageWise[i][j%num_cols], cmap="Greys_r")
+                im = np.transpose(imageWise[i][j%num_cols], (1,2,0))
+                ax.imshow(im)
+                ax.get_xaxis().set_visible(False)
+                ax.get_yaxis().set_visible(False)
+            else :
+                # ax.imshow(glimpses[i], cmap="Greys_r")
+                # ax.imshow(glimpses[i])
                 ax.imshow(im1)
                 ax.get_xaxis().set_visible(False)
                 ax.get_yaxis().set_visible(False)
@@ -87,43 +84,11 @@ def main(plot_dir, epoch):
                 )
                 ax.add_patch(rect)
 
-            elif j >= num_cols and j < (num_patches+1)*num_cols:
-                im = np.transpose(glimpsesWise[j%num_cols][i][int(j/num_cols)-1], (1,2,0))
-                # im = glimpsesWise[j%num_cols][i][int(j/num_cols)-1]
-                print(j%num_cols, " ", i, " ", int(j/num_cols)-1)
-                ax.imshow(im)
-                ax.get_xaxis().set_visible(False)
-                ax.get_yaxis().set_visible(False)
-                pass
-
-            else:
-                im = np.transpose(imageWise[i][j%num_cols], (1,2,0))
-                ax.imshow(im)
-                ax.get_xaxis().set_visible(False)
-                ax.get_yaxis().set_visible(False)
-            # if j >= num_cols:
-            #     # ax.imshow(imageWise[i][j%num_cols], cmap="Greys_r")
-            #     im = np.transpose(imageWise[i][j%num_cols], (1,2,0))
-            #     ax.imshow(im)
-            #     ax.get_xaxis().set_visible(False)
-            #     ax.get_yaxis().set_visible(False)
-            # else :
-            #     # ax.imshow(glimpses[i], cmap="Greys_r")
-            #     # ax.imshow(glimpses[i])
-            #     ax.imshow(im1)
-            #     ax.get_xaxis().set_visible(False)
-            #     ax.get_yaxis().set_visible(False)
-            #     c = coords[j][i]
-            #     rect = bounding_box(
-            #         c[0], c[1], size, color
-            #     )
-            #     ax.add_patch(rect)
-
         plt.show()
 
     for i in range(imageWise.shape[0]):
         showAll(i)
-
+            
 
 
     # def updateData(i):
@@ -149,7 +114,7 @@ def main(plot_dir, epoch):
     #     # plt.imshow(fig)
     #     # plt.waitforbuttonpress()
     #     # fig1, axs1 = plt.subplots(nrows=1, ncols=num_cols)
-
+        
     #     # pdb.set_trace()
     #     # plt.close()
 
@@ -206,7 +171,7 @@ def main(plot_dir, epoch):
 #     def updateData(i):
 
 #         for j, ax
-
+    
     # fig=plt.figure(figsize=(8, 8))
     # columns = 4
     # rows = 5

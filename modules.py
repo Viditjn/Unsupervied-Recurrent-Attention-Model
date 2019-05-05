@@ -250,8 +250,8 @@ class glimpse_network(nn.Module):
 
     def forward(self, x, l_t_prev):
         # generate glimpse phi from image x
-        phi = self.retina.foveate(x, l_t_prev)
-        # phi, phi_old = self.retina.foveate(x, l_t_prev)
+        # phi = self.retina.foveate(x, l_t_prev)
+        phi, phi_old = self.retina.foveate(x, l_t_prev)
 
         # flatten location vector
         l_t_prev = l_t_prev.view(l_t_prev.size(0), -1)

@@ -16,7 +16,7 @@ I decided to tackle the `32x32` Cifae-10 task with the RAM model containing 9 gl
 
 <p align="center">
  <img src="./plots/plot_glimpse_1.png" alt="Drawing", width=30%>
-</p>
+</p> 
 
  -Here in the first row it shows the bounding box of size*size (here in
 this case it is 6*6) at the location where it is looking.
